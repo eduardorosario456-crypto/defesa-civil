@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Defesa Civil — Ocorrências</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── TOKENS ─────────────────────────────────── */
+  :root {
+    --orange:     #E8500A;
+    --orange-dk:  #B83D08;
+    --orange-lt:  #FDF0E9;
+    --yellow:     #F5C842;
+    --bg:         #F2F0EB;
+    --surface:    #FFFFFF;
+    --border:     #D8D4CC;
+    --border-lt:  #EAE7E1;
+    --text:       #1A1915;
+    --muted:      #6B6760;
+    --hint:       #9E9B96;
+    --success-bg: #E8F5EE;
+    --success:    #1A7A45;
+    --warn-bg:    #FFF8E0;
+    --warn:       #8A6300;
+    --info-bg:    #E3EFFC;
+    --info:       #1356A0;
+    --danger-bg:  #FDECEA;
+    --danger:     #B02020;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --rad: 6px;
+    --rad-lg: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* ── HEADER ────────────────────────────────── */
+  header {
+    background: var(--orange);
+    color: #fff;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .logo-mark {
+    width: 26px; height: 26px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-mark svg { width: 16px; height: 16px; }
+
+  .hd-right { display: flex; align-items: center; gap: 10px; }
+
+  .sync-pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    transition: background 0.3s;
+    white-space: nowrap;
+  }
+  .sync-pill.syncing { background: rgba(245,200,66,0.35); }
+  .sync-pill.error   { background: rgba(255,80,80,0.35); }
+  .sync-pill.offline { background: rgba(255,255,255,0.1); }
+
+  /* ── NAV ────────────────────────────────────── */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 1.25rem;
+    gap: 2px;
+  }
+  .nav-btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 14px 10px;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: color 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nav-btn.active  { color: var(--orange); border-bottom-color: var(--orange); }
+  .nav-btn:hover:not(.active) { color: var(--text); }
+  .badge-nav {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--orange-lt);
+    color: var(--orange);
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  /* ── MAIN ───────────────────────────────────── */
+  main { max-width: 860px; margin: 0 auto; padding: 1.25rem; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── CONFIG BANNER ──────────────────────────── */
+  .config-banner {
+    background: var(--warn-bg);
+    border: 1px solid var(--yellow);
+    border-radius: var(--rad-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .config-banner.hidden { display: none; }
+  .config-banner-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .config-banner h3 { font-size: 14px; font-weight: 600; color: var(--warn); margin-bottom: 4px; }
+  .config-banner p  { font-size: 13px; color: var(--warn); line-height: 1.5; }
+  .config-input-row { display: flex; gap: 8px; margin-top: 10px; }
+  .config-input {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 7px 10px;
+    border: 1px solid #D4B84A;
+    border-radius: var(--rad);
+    background: #fff;
+    color: var(--text);
+    outline: none;
+  }
+  .config-input:focus { border-color: var(--orange); }
+
+  /* ── CARD ───────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad-lg);
+    padding: 1.25rem;
+  }
+
+  /* ── FORM ───────────────────────────────────── */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hint);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-lt);
+  }
+  .section-wrap { margin-bottom: 1.25rem; }
+
+  .fg { display: grid; gap: 12px; margin-bottom: 0; }
+  .fg-2 { grid-template-columns: 1fr 1fr; }
+  .fg-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .fg-1 { grid-template-columns: 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+
+  .field input,
+  .field select,
+  .field textarea {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--rad);
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--orange);
+    background: #fff;
+  }
+  .field input[readonly] { background: var(--border-lt); color: var(--muted); cursor: default; }
+  .field textarea { min-height: 68px; resize: vertical; }
+  .field select { cursor: pointer; }
+
+  .form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-lt);
+    margin-top: 1rem;
+  }
+
+  /* ── BUTTONS ─────────────────────────────────── */
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: var(--rad);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .btn-primary:hover { background: var(--orange-dk); border-color: var(--orange-dk); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-ghost  { background: none; color: var(--muted); }
+  .btn-ghost:hover  { background: var(--bg); color: var(--text); }
+  .btn-danger { background: none; color: var(--danger); border-color: #f0c0bc; }
+  .btn-danger:hover { background: var(--danger-bg); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-xs { padding: 3px 9px; font-size: 11px; }
+
+  /* ── TOOLBAR ─────────────────────────────────── */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .toolbar input[type=text] {
+    flex: 1;
+    min-width: 180px;
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 7px 11px;
+    border: 1px solid var(--border);
+    border-radius: var(--rad);
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+  }
+  .toolbar input[type=text]:focus { border-color: var(--orange); }
+  .toolbar select {
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--rad);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .counter {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--hint);
+    margin-bottom: 8px;
+  }
+
+  /* ── OCCURRENCE CARDS ───────────────────────── */
+  .occ-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad-lg);
+    padding: 1rem 1.1rem;
+    margin-bottom: 6px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: start;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .occ-card:hover { border-color: #bbb; }
+
+  .occ-card.pending {
+    border-left: 3px solid var(--yellow);
+  }
+
+  .proto {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--orange);
+    border-radius: 3px;
+    padding: 2px 7px;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+
+  .occ-body { display: flex; flex-direction: column; gap: 3px; }
+  .occ-tipo { font-size: 14px; font-weight: 600; color: var(--text); }
+  .occ-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .occ-end { font-size: 13px; color: var(--muted); }
+
+  .status-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .s-aberto    { background: var(--warn-bg);    color: var(--warn);    border: 1px solid #E8C84A; }
+  .s-andamento { background: var(--info-bg);    color: var(--info);    border: 1px solid #90B8F0; }
+  .s-concluido { background: var(--success-bg); color: var(--success); border: 1px solid #7ECBA1; }
+
+  /* ── EMPTY STATE ─────────────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 3.5rem 1rem;
+    color: var(--hint);
+  }
+  .empty svg { opacity: 0.18; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* ── MODAL ───────────────────────────────────── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--rad-lg);
+    padding: 1.25rem;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-hd {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-lt);
+  }
+  .modal-hd h2 { font-size: 14px; font-weight: 600; }
+  .modal-close { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; padding: 4px; }
+  .modal-close:hover { color: var(--text); }
+
+  .detail-row { display: flex; gap: 8px; margin-bottom: 8px; font-size: 13px; }
+  .detail-lbl { font-weight: 500; color: var(--muted); min-width: 110px; flex-shrink: 0; }
+  .detail-val { color: var(--text); }
+
+  .status-sel {
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--rad);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+  }
+  .status-sel:focus { border-color: var(--orange); }
+
+  .modal-ft {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-lt);
+  }
+
+  /* ── RELATÓRIO ───────────────────────────────── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad-lg);
+    padding: 1rem;
+    text-align: center;
+  }
+  .stat-num {
+    display: block;
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--orange);
+  }
+  .stat-num.s-warn { color: var(--warn); }
+  .stat-num.s-info { color: var(--info); }
+  .stat-num.s-ok   { color: var(--success); }
+  .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .type-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rad-lg); overflow: hidden; margin-top: 1rem; }
+  .type-row-t {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border-lt);
+    font-size: 13px;
+  }
+  .type-row-t:last-child { border-bottom: none; }
+  .type-name { flex: 0 0 210px; color: var(--text); }
+  .type-bar-bg { flex: 1; height: 5px; background: var(--bg); border-radius: 3px; }
+  .type-bar-fill { height: 5px; border-radius: 3px; background: var(--orange); transition: width 0.5s; }
+  .type-cnt { font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 22px; text-align: right; }
+
+  .export-row { display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+
+  /* ── SYNC INDICATOR ──────────────────────────── */
+  .pending-bar {
+    background: var(--warn-bg);
+    border: 1px solid #E8C84A;
+    border-radius: var(--rad);
+    padding: 7px 12px;
+    font-size: 12px;
+    color: var(--warn);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .pending-bar.hidden { display: none; }
+  .dot-pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); animation: pulse 1.2s ease-in-out infinite; flex-shrink: 0; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.75)} }
+
+  /* ── RESPONSIVE ───────────────────────────────── */
+  @media (max-width: 600px) {
+    .fg-2, .fg-3 { grid-template-columns: 1fr; }
+    .occ-card { grid-template-columns: auto 1fr; }
+    .occ-card > *:last-child { grid-column: 2; }
+    main { padding: 0.875rem; }
+    .type-name { flex: 0 0 130px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M8 1L14.5 13H1.5L8 1Z" fill="rgba(255,255,255,0.9)"/>
+        <path d="M8 5.5V9M8 10.5V11.5" stroke="#E8500A" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    Defesa Civil
+  </div>
+  <div class="hd-right">
+    <span class="sync-pill" id="syncStatus">● Online</span>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <button class="nav-btn active" id="nav-nova"     onclick="showPanel('nova')">Nova ocorrência</button>
+  <button class="nav-btn"        id="nav-lista"    onclick="showPanel('lista')">Registros <span class="badge-nav" id="badge-total">0</span></button>
+  <button class="nav-btn"        id="nav-relatorio" onclick="showPanel('relatorio')">Relatório</button>
+  <button class="nav-btn"        id="nav-config"   onclick="showPanel('config')">Configuração</button>
+</nav>
+
+<main>
+
+  <!-- ═══════════════════ NOVA OCORRÊNCIA ═══════════════════ -->
+  <div class="panel active" id="panel-nova">
+
+    <div class="config-banner" id="banner-config">
+      <div class="config-banner-icon">⚙️</div>
+      <div style="flex:1">
+        <h3>Configure o Google Sheets para salvar na nuvem</h3>
+        <p>Sem configuração, os dados ficam salvos só neste navegador. Vá em <strong>Configuração</strong> para conectar.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="showPanel('config')">Configurar</button>
+    </div>
+
+    <div class="card">
+      <div class="section-wrap">
+        <div class="section-label">Dados da solicitação</div>
+        <div class="fg fg-3">
+          <div class="field">
+            <label>Data *</label>
+            <input type="date" id="f-data">
+          </div>
+          <div class="field">
+            <label>Hora *</label>
+            <input type="time" id="f-hora">
+          </div>
+          <div class="field">
+            <label>Protocolo</label>
+            <input type="text" id="f-protocolo" readonly>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-wrap">
+        <div class="section-label">Solicitante</div>
+        <div class="fg fg-2">
+          <div class="field">
+            <label>Nome *</label>
+            <input type="text" id="f-solicitante" placeholder="Nome completo">
+          </div>
+          <div class="field">
+            <label>Telefone *</label>
+            <input type="tel" id="f-telefone" placeholder="(00) 00000-0000" maxlength="15">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-wrap">
+        <div class="section-label">Ocorrência</div>
+        <div class="fg fg-2">
+          <div class="field">
+            <label>Tipo *</label>
+            <select id="f-tipo">
+              <option value="">Selecione...</option>
+              <option>Deslizamento / Desmoronamento</option>
+              <option>Alagamento / Inundação</option>
+              <option>Vendaval / Danos por Vento</option>
+              <option>Incêndio em Vegetação</option>
+              <option>Árvore sobre Edificação / Via</option>
+              <option>Edificação em Risco</option>
+              <option>Erosão / Voçoroca</option>
+              <option>Dano por Chuva de Granizo</option>
+              <option>Afundamento de Pista</option>
+              <option>Resgate / Salvamento</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="f-status">
+              <option value="aberto">Em Aberto</option>
+              <option value="andamento">Em Atendimento</option>
+              <option value="concluido">Concluído</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-wrap">
+        <div class="section-label">Localização</div>
+        <div class="fg fg-1" style="margin-bottom:12px">
+          <div class="field">
+            <label>Endereço *</label>
+            <input type="text" id="f-endereco" placeholder="Rua, número">
+          </div>
+        </div>
+        <div class="fg fg-3">
+          <div class="field">
+            <label>Bairro</label>
+            <input type="text" id="f-bairro">
+          </div>
+          <div class="field">
+            <label>Referência</label>
+            <input type="text" id="f-referencia" placeholder="Próx. a...">
+          </div>
+          <div class="field">
+            <label>Equipe enviada</label>
+            <input type="text" id="f-equipe">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-wrap" style="margin-bottom:0">
+        <div class="section-label">Observações</div>
+        <div class="field">
+          <textarea id="f-obs" placeholder="Detalhes adicionais..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="limparForm()">Limpar</button>
+        <button class="btn btn-primary" onclick="registrar()">Registrar ocorrência</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ LISTA ═══════════════════ -->
+  <div class="panel" id="panel-lista">
+
+    <div class="pending-bar hidden" id="pending-bar">
+      <div class="dot-pulse"></div>
+      <span id="pending-msg">Aguardando conexão para sincronizar...</span>
+      <button class="btn btn-ghost btn-xs" onclick="sincronizarPendentes()" style="margin-left:auto">Sincronizar agora</button>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="busca" placeholder="Buscar por nome, endereço, tipo..." oninput="renderLista()">
+      <select id="filtro-status" onchange="renderLista()">
+        <option value="">Todos os status</option>
+        <option value="aberto">Em Aberto</option>
+        <option value="andamento">Em Atendimento</option>
+        <option value="concluido">Concluídos</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="carregarDaNuvem(true)" title="Recarregar da nuvem">↻</button>
+    </div>
+
+    <div class="counter" id="counter"></div>
+    <div id="lista"></div>
+  </div>
+
+  <!-- ═══════════════════ RELATÓRIO ═══════════════════ -->
+  <div class="panel" id="panel-relatorio">
+    <div class="export-row">
+      <button class="btn btn-ghost btn-sm" onclick="exportarCSV()">↓ Exportar CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportarJSON()">↓ Exportar JSON (backup)</button>
+      <button class="btn btn-ghost btn-sm" onclick="importarJSON()">↑ Importar JSON</button>
+    </div>
+    <div class="stats-row" id="stats-row"></div>
+    <div class="section-label" style="margin-top:.5rem">Ocorrências por tipo</div>
+    <div class="type-table" id="type-table"></div>
+  </div>
+
+  <!-- ═══════════════════ CONFIGURAÇÃO ═══════════════════ -->
+  <div class="panel" id="panel-config">
+    <div class="card">
+      <div class="section-label">URL do Google Apps Script</div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6">
+        Cole aqui o link gerado ao publicar o script. Consulte o guia de instalação incluído no pacote.
+      </p>
+      <div class="field" style="margin-bottom:12px">
+        <label>URL da API</label>
+        <input type="url" id="cfg-url" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="salvarConfig()">Salvar e testar conexão</button>
+        <button class="btn btn-ghost btn-sm" onclick="testarConexao()">Testar conexão</button>
+        <span id="cfg-status" style="font-size:12px; color:var(--muted)"></span>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-lt)">
+        <div class="section-label">Passo a passo para configurar</div>
+        <ol style="font-size:13px; color:var(--muted); line-height:1.9; padding-left:1.2rem">
+          <li>Acesse <strong style="color:var(--text)">script.google.com</strong> e crie um novo projeto</li>
+          <li>Apague o código existente e cole o conteúdo do arquivo <strong style="color:var(--text)">DefesaCivil_Script.gs</strong></li>
+          <li>Clique em <strong style="color:var(--text)">Salvar</strong> (Ctrl+S)</li>
+          <li>Clique em <strong style="color:var(--text)">Implantar → Nova implantação</strong></li>
+          <li>Tipo: <strong style="color:var(--text)">App da Web</strong></li>
+          <li>Executar como: <strong style="color:var(--text)">Você</strong></li>
+          <li>Quem pode acessar: <strong style="color:var(--text)">Qualquer pessoa</strong></li>
+          <li>Clique em <strong style="color:var(--text)">Implantar</strong> e copie o URL gerado</li>
+          <li>Cole o URL acima e clique em <strong style="color:var(--text)">Salvar e testar conexão</strong></li>
+        </ol>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-lt)">
+        <div class="section-label">Dados locais</div>
+        <p style="font-size:13px; color:var(--muted); margin-bottom:10px">
+          <strong id="local-count" style="color:var(--text)">0</strong> ocorrências salvas neste navegador.
+        </p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="carregarDaNuvem(true)">↻ Recarregar da nuvem</button>
+          <button class="btn btn-danger btn-sm" onclick="limparDadosLocais()">Limpar dados locais</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL DETALHE -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)fecharModal()">
+  <div class="modal">
+    <div class="modal-hd">
+      <h2 id="modal-titulo">Ocorrência</h2>
+      <button class="modal-close" onclick="fecharModal()">✕</button>
+    </div>
+    <div id="modal-corpo"></div>
+    <div class="modal-ft">
+      <button class="btn btn-danger btn-sm" id="btn-excluir">Excluir</button>
+      <button class="btn btn-ghost btn-sm" onclick="fecharModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:#1A1915; color:#fff; font-size:13px; padding:9px 18px; border-radius:6px;
+  transition:transform 0.25s; z-index:999; pointer-events:none; white-space:nowrap;
+"></div>
+
+<input type="file" id="import-file" accept=".json" style="display:none" onchange="processarImport(event)">
+
+<script>
+// ═══════════════ STATE ════════════════
+var ocorrencias  = [];
+var pendentes    = []; // salvos offline aguardando sync
+var apiUrl       = '';
+var modalId      = null;
+
+var STATUS_LABEL = { aberto:'Em Aberto', andamento:'Em Atendimento', concluido:'Concluído' };
+var STATUS_CLS   = { aberto:'s-aberto',  andamento:'s-andamento',    concluido:'s-concluido' };
+
+// ═══════════════ INIT ════════════════
+function init() {
+  apiUrl = localStorage.getItem('dc_api_url') || '';
+  carregarLocal();
+  setDataHora();
+  renderBadge();
+  atualizarBannerConfig();
+  atualizarContadorLocal();
+
+  if (apiUrl) carregarDaNuvem(false);
+
+  window.addEventListener('online',  onOnline);
+  window.addEventListener('offline', onOffline);
+  atualizarStatusRede();
+
+  document.getElementById('f-telefone').addEventListener('input', function(){
+    var v = this.value.replace(/\D/g,'');
+    if (v.length <= 10) v = v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
+    else                v = v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+    this.value = v;
+  });
+}
+
+// ═══════════════ REDE ════════════════
+function atualizarStatusRede() {
+  var el = document.getElementById('syncStatus');
+  el.className = navigator.onLine ? 'sync-pill' : 'sync-pill offline';
+  el.textContent = navigator.onLine ? '● Online' : '● Offline';
+}
+function onOnline()  { atualizarStatusRede(); sincronizarPendentes(); }
+function onOffline() { atualizarStatusRede(); }
+
+// ═══════════════ LOCAL STORAGE ════════════════
+function salvarLocal() {
+  localStorage.setItem('dc_ocorrencias', JSON.stringify(ocorrencias));
+  localStorage.setItem('dc_pendentes',   JSON.stringify(pendentes));
+  renderBadge();
+  atualizarContadorLocal();
+}
+
+function carregarLocal() {
+  try { ocorrencias = JSON.parse(localStorage.getItem('dc_ocorrencias') || '[]'); } catch(e){ ocorrencias = []; }
+  try { pendentes   = JSON.parse(localStorage.getItem('dc_pendentes')   || '[]'); } catch(e){ pendentes   = []; }
+}
+
+function atualizarContadorLocal() {
+  var el = document.getElementById('local-count');
+  if (el) el.textContent = ocorrencias.length;
+}
+
+// ═══════════════ API ════════════════
+function api(params, cb) {
+  if (!apiUrl) { if (cb) cb(null, 'Sem URL configurada'); return; }
+  var url = apiUrl + '?' + Object.keys(params).map(function(k){
+    return k + '=' + encodeURIComponent(typeof params[k]==='object' ? JSON.stringify(params[k]) : params[k]);
+  }).join('&');
+
+  setSyncStatus('syncing', '↻ Sincronizando...');
+  fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      setSyncStatus('', '● Online');
+      if (cb) cb(data, null);
+    })
+    .catch(function(err){
+      setSyncStatus('error', '● Erro de conexão');
+      setTimeout(function(){ setSyncStatus('', navigator.onLine ? '● Online' : '● Offline'); }, 3000);
+      if (cb) cb(null, err.toString());
+    });
+}
+
+function setSyncStatus(cls, txt) {
+  var el = document.getElementById('syncStatus');
+  el.className = 'sync-pill' + (cls ? ' '+cls : '');
+  el.textContent = txt;
+}
+
+// ═══════════════ CARREGAR DA NUVEM ════════════════
+function carregarDaNuvem(mostrarToast) {
+  if (!apiUrl) return;
+  api({ action: 'listar' }, function(data, err) {
+    if (err || !data || !data.ok) {
+      if (mostrarToast) toast('Erro ao carregar da nuvem');
+      return;
+    }
+    // Merge: nuvem tem precedência, mas mantém pendentes locais
+    var ids = {};
+    (data.dados || []).forEach(function(o){ ids[o.id] = true; });
+    // Adiciona pendentes que ainda não foram para nuvem
+    var pending_objs = pendentes.map(function(id){
+      return ocorrencias.find(function(o){ return String(o.id) === String(id); });
+    }).filter(Boolean);
+
+    ocorrencias = data.dados || [];
+    // reintegra pendentes
+    pending_objs.forEach(function(po){
+      if (!ids[po.id]) ocorrencias.unshift(po);
+    });
+
+    salvarLocal();
+    renderLista();
+    renderRelatorio();
+    if (mostrarToast) toast('Dados atualizados da nuvem');
+  });
+}
+
+// ═══════════════ SINCRONIZAR PENDENTES ════════════════
+function sincronizarPendentes() {
+  if (!apiUrl || !navigator.onLine || pendentes.length === 0) return;
+  var ids = pendentes.slice();
+  var erros = 0;
+  var done = 0;
+
+  ids.forEach(function(id) {
+    var occ = ocorrencias.find(function(o){ return String(o.id) === String(id); });
+    if (!occ) { done++; return; }
+    api({ action: 'salvar', dados: occ }, function(data, err) {
+      done++;
+      if (!err && data && data.ok) {
+        pendentes = pendentes.filter(function(p){ return String(p) !== String(id); });
+      } else {
+        erros++;
+      }
+      if (done === ids.length) {
+        salvarLocal();
+        atualizarPendentesBar();
+        if (erros === 0) toast('Sincronização concluída!');
+        else toast('Sincronizado com ' + erros + ' erro(s)');
+      }
+    });
+  });
+}
+
+function atualizarPendentesBar() {
+  var bar = document.getElementById('pending-bar');
+  var msg = document.getElementById('pending-msg');
+  if (pendentes.length > 0) {
+    bar.classList.remove('hidden');
+    msg.textContent = pendentes.length + ' ocorrência(s) aguardando sincronização com a nuvem';
+  } else {
+    bar.classList.add('hidden');
+  }
+}
+
+// ═══════════════ REGISTRAR ════════════════
+function registrar() {
+  var obrig = [
+    { id:'f-data', label:'Data' },
+    { id:'f-hora', label:'Hora' },
+    { id:'f-solicitante', label:'Solicitante' },
+    { id:'f-telefone', label:'Telefone' },
+    { id:'f-tipo', label:'Tipo de ocorrência' },
+    { id:'f-endereco', label:'Endereço' },
+  ];
+  for (var i = 0; i < obrig.length; i++) {
+    if (!document.getElementById(obrig[i].id).value.trim()) {
+      toast('Preencha: ' + obrig[i].label);
+      document.getElementById(obrig[i].id).focus();
+      return;
+    }
+  }
+
+  var occ = {
+    id:          Date.now(),
+    protocolo:   document.getElementById('f-protocolo').value,
+    data:        document.getElementById('f-data').value,
+    hora:        document.getElementById('f-hora').value,
+    solicitante: document.getElementById('f-solicitante').value.trim(),
+    telefone:    document.getElementById('f-telefone').value.trim(),
+    tipo:        document.getElementById('f-tipo').value,
+    status:      document.getElementById('f-status').value,
+    endereco:    document.getElementById('f-endereco').value.trim(),
+    bairro:      document.getElementById('f-bairro').value.trim(),
+    referencia:  document.getElementById('f-referencia').value.trim(),
+    equipe:      document.getElementById('f-equipe').value.trim(),
+    obs:         document.getElementById('f-obs').value.trim(),
+    criadoEm:   new Date().toISOString(),
+    atualizadoEm: new Date().toISOString(),
+  };
+
+  ocorrencias.unshift(occ);
+
+  if (apiUrl && navigator.onLine) {
+    api({ action: 'salvar', dados: occ }, function(data, err) {
+      if (err || !data || !data.ok) {
+        pendentes.push(occ.id);
+        atualizarPendentesBar();
+        toast('Salvo localmente — sem conexão com a nuvem');
+      } else {
+        toast('Ocorrência registrada e salva na nuvem!');
+      }
+      salvarLocal();
+    });
+  } else {
+    if (apiUrl) pendentes.push(occ.id);
+    salvarLocal();
+    atualizarPendentesBar();
+    toast(apiUrl ? 'Salvo localmente — sincronizará quando online' : 'Ocorrência registrada localmente!');
+  }
+
+  limparForm();
+  renderBadge();
+  showPanel('lista');
+}
+
+// ═══════════════ FORM HELPERS ════════════════
+function setDataHora() {
+  var now = new Date();
+  document.getElementById('f-data').value = now.toISOString().slice(0,10);
+  document.getElementById('f-hora').value = now.toTimeString().slice(0,5);
+  gerarProtocolo();
+}
+
+function gerarProtocolo() {
+  var ano = new Date().getFullYear();
+  var seq = String(ocorrencias.length + pendentes.length + 1).padStart(4,'0');
+  document.getElementById('f-protocolo').value = 'DC-' + ano + '-' + seq;
+}
+
+function limparForm() {
+  ['f-solicitante','f-telefone','f-endereco','f-bairro','f-referencia','f-equipe','f-obs']
+    .forEach(function(id){ document.getElementById(id).value = ''; });
+  document.getElementById('f-tipo').value   = '';
+  document.getElementById('f-status').value = 'aberto';
+  setDataHora();
+}
+
+// ═══════════════ LISTA ════════════════
+function renderLista() {
+  var busca   = (document.getElementById('busca').value || '').toLowerCase();
+  var filtro  = document.getElementById('filtro-status').value;
+
+  var filtradas = ocorrencias.filter(function(o){
+    var ok_s = !filtro || o.status === filtro;
+    var ok_b = !busca  || [o.solicitante, o.endereco, o.tipo, o.bairro, o.protocolo]
+                            .some(function(v){ return (v||'').toLowerCase().includes(busca); });
+    return ok_s && ok_b;
+  });
+
+  document.getElementById('counter').textContent =
+    filtradas.length + ' ocorrência' + (filtradas.length !== 1 ? 's' : '');
+
+  var el = document.getElementById('lista');
+  if (!filtradas.length) {
+    el.innerHTML = '<div class="empty">'
+      + '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M8 8h5"/></svg>'
+      + '<p>' + (busca || filtro ? 'Nenhuma ocorrência encontrada.' : 'Nenhuma ocorrência registrada.') + '</p>'
+      + '</div>';
+    return;
+  }
+
+  el.innerHTML = filtradas.map(function(o){
+    var isPending = pendentes.indexOf(o.id) >= 0 || pendentes.indexOf(String(o.id)) >= 0;
+    return '<div class="occ-card' + (isPending ? ' pending' : '') + '" onclick="abrirModal(' + o.id + ')">'
+      + '<div><div class="proto">' + esc(o.protocolo || '#') + '</div></div>'
+      + '<div class="occ-body">'
+      + '<div class="occ-tipo">' + esc(o.tipo) + '</div>'
+      + '<div class="occ-meta">'
+      + '<span>' + fmtData(o.data) + ' ' + (o.hora||'') + '</span>'
+      + '<span>' + esc(o.solicitante) + '</span>'
+      + (o.bairro ? '<span>' + esc(o.bairro) + '</span>' : '')
+      + (isPending ? '<span style="color:var(--warn)">⏳ aguardando sync</span>' : '')
+      + '</div>'
+      + '<div class="occ-end">' + esc(o.endereco) + '</div>'
+      + '</div>'
+      + '<div><span class="status-badge ' + (STATUS_CLS[o.status]||'s-aberto') + '">' + (STATUS_LABEL[o.status]||o.status) + '</span></div>'
+      + '</div>';
+  }).join('');
+
+  atualizarPendentesBar();
+}
+
+function renderBadge() {
+  document.getElementById('badge-total').textContent = ocorrencias.length;
+}
+
+// ═══════════════ MODAL ════════════════
+function abrirModal(id) {
+  var o = ocorrencias.find(function(x){ return x.id == id; });
+  if (!o) return;
+  modalId = id;
+
+  document.getElementById('modal-titulo').textContent = (o.protocolo||'#') + ' — ' + o.tipo;
+
+  var rows = [
+    ['Data / Hora', fmtData(o.data) + ' às ' + (o.hora||'')],
+    ['Solicitante', o.solicitante],
+    ['Telefone',    o.telefone],
+    ['Tipo',        o.tipo],
+    ['Endereço',    o.endereco + (o.bairro ? ', ' + o.bairro : '')],
+    ['Referência',  o.referencia || '—'],
+    ['Equipe',      o.equipe     || '—'],
+    ['Observações', o.obs        || '—'],
+  ];
+
+  document.getElementById('modal-corpo').innerHTML =
+    rows.map(function(r){
+      return '<div class="detail-row"><span class="detail-lbl">' + r[0] + '</span>'
+           + '<span class="detail-val">' + esc(r[1]) + '</span></div>';
+    }).join('')
+    + '<div class="detail-row" style="align-items:center">'
+    + '<span class="detail-lbl">Status</span>'
+    + '<select class="status-sel" onchange="atualizarStatus(' + id + ',this.value)">'
+    + ['aberto','andamento','concluido'].map(function(s){
+        return '<option value="' + s + '"' + (o.status===s?' selected':'') + '>' + STATUS_LABEL[s] + '</option>';
+      }).join('')
+    + '</select></div>';
+
+  document.getElementById('btn-excluir').onclick = function(){ excluir(id); };
+  document.getElementById('overlay').classList.add('open');
+}
+
+function atualizarStatus(id, novoStatus) {
+  var o = ocorrencias.find(function(x){ return x.id == id; });
+  if (!o) return;
+  o.status = novoStatus;
+  o.atualizadoEm = new Date().toISOString();
+  salvarLocal();
+  if (apiUrl && navigator.onLine) {
+    api({ action: 'atualizar', dados: o }, function(){});
+  } else if (apiUrl) {
+    if (pendentes.indexOf(o.id) < 0) pendentes.push(o.id);
+    salvarLocal();
+  }
+  renderLista();
+  toast('Status atualizado');
+}
+
+function excluir(id) {
+  if (!confirm('Excluir esta ocorrência permanentemente?')) return;
+  ocorrencias = ocorrencias.filter(function(x){ return x.id != id; });
+  pendentes   = pendentes.filter(function(p){ return String(p) !== String(id); });
+  salvarLocal();
+  if (apiUrl && navigator.onLine) {
+    api({ action: 'excluir', id: String(id) }, function(){});
+  }
+  fecharModal();
+  renderLista();
+  renderRelatorio();
+  renderBadge();
+  toast('Excluída');
+}
+
+function fecharModal() {
+  document.getElementById('overlay').classList.remove('open');
+  modalId = null;
+}
+
+// ═══════════════ RELATÓRIO ════════════════
+function renderRelatorio() {
+  var total   = ocorrencias.length;
+  var abertos = ocorrencias.filter(function(o){ return o.status === 'aberto'; }).length;
+  var emAnd   = ocorrencias.filter(function(o){ return o.status === 'andamento'; }).length;
+  var concl   = ocorrencias.filter(function(o){ return o.status === 'concluido'; }).length;
+
+  document.getElementById('stats-row').innerHTML =
+    statCard(total,  '',       'Total')           +
+    statCard(abertos,'s-warn', 'Em Aberto')       +
+    statCard(emAnd,  's-info', 'Em Atendimento')  +
+    statCard(concl,  's-ok',   'Concluídas');
+
+  var cnt = {};
+  ocorrencias.forEach(function(o){ cnt[o.tipo] = (cnt[o.tipo]||0) + 1; });
+  var sorted = Object.keys(cnt).map(function(t){ return [t, cnt[t]]; })
+                               .sort(function(a,b){ return b[1]-a[1]; });
+  var max = sorted[0] ? sorted[0][1] : 1;
+
+  document.getElementById('type-table').innerHTML = sorted.length
+    ? sorted.map(function(row){
+        return '<div class="type-row-t">'
+          + '<div class="type-name">' + esc(row[0]) + '</div>'
+          + '<div class="type-bar-bg"><div class="type-bar-fill" style="width:' + Math.round(row[1]/max*100) + '%"></div></div>'
+          + '<div class="type-cnt">' + row[1] + '</div>'
+          + '</div>';
+      }).join('')
+    : '<div class="type-row-t" style="color:var(--hint)">Sem dados disponíveis.</div>';
+}
+
+function statCard(n, cls, lbl) {
+  return '<div class="stat-card"><span class="stat-num ' + cls + '">' + n + '</span>'
+       + '<div class="stat-lbl">' + lbl + '</div></div>';
+}
+
+// ═══════════════ EXPORTAR / IMPORTAR ════════════════
+function exportarCSV() {
+  if (!ocorrencias.length) { toast('Sem dados para exportar'); return; }
+  var cols = ['protocolo','data','hora','solicitante','telefone','tipo','status','endereco','bairro','referencia','equipe','obs'];
+  var hdr  = ['Protocolo','Data','Hora','Solicitante','Telefone','Tipo','Status','Endereço','Bairro','Referência','Equipe','Obs'];
+  var csv  = [hdr.join(';')].concat(ocorrencias.map(function(o){
+    return cols.map(function(c){ return '"' + (o[c]||'').replace(/"/g,'""') + '"'; }).join(';');
+  })).join('\n');
+  baixar('\uFEFF' + csv, 'ocorrencias_dc_' + hoje() + '.csv', 'text/csv;charset=utf-8');
+}
+
+function exportarJSON() {
+  if (!ocorrencias.length) { toast('Sem dados para exportar'); return; }
+  baixar(JSON.stringify(ocorrencias, null, 2), 'ocorrencias_dc_' + hoje() + '.json', 'application/json');
+}
+
+function importarJSON() {
+  document.getElementById('import-file').click();
+}
+
+function processarImport(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var dados = JSON.parse(ev.target.result);
+      if (!Array.isArray(dados)) { toast('Arquivo inválido'); return; }
+      var novos = 0;
+      dados.forEach(function(o) {
+        if (!ocorrencias.find(function(x){ return String(x.id) === String(o.id); })) {
+          ocorrencias.push(o);
+          novos++;
+        }
+      });
+      ocorrencias.sort(function(a,b){ return b.id - a.id; });
+      salvarLocal();
+      renderLista();
+      renderRelatorio();
+      renderBadge();
+      toast(novos + ' ocorrência(s) importada(s)');
+    } catch(err) {
+      toast('Erro ao ler arquivo JSON');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ═══════════════ CONFIG ════════════════
+function salvarConfig() {
+  apiUrl = document.getElementById('cfg-url').value.trim();
+  localStorage.setItem('dc_api_url', apiUrl);
+  atualizarBannerConfig();
+  testarConexao();
+}
+
+function testarConexao() {
+  var url = document.getElementById('cfg-url').value.trim();
+  if (!url) { toast('Cole a URL antes de testar'); return; }
+  apiUrl = url;
+  var el = document.getElementById('cfg-status');
+  el.textContent = 'Testando...';
+  el.style.color = 'var(--muted)';
+  api({ action: 'ping' }, function(data, err) {
+    if (err || !data || !data.ok) {
+      el.textContent = '✗ Falha na conexão. Verifique a URL.';
+      el.style.color = 'var(--danger)';
+    } else {
+      el.textContent = '✓ ' + (data.msg || 'Conectado!');
+      el.style.color = 'var(--success)';
+      toast('Conectado ao Google Sheets!');
+      carregarDaNuvem(false);
+    }
+  });
+}
+
+function atualizarBannerConfig() {
+  document.getElementById('banner-config').classList.toggle('hidden', !!apiUrl);
+}
+
+function limparDadosLocais() {
+  if (!confirm('Apagar todos os dados locais? (dados na nuvem permanecem)')) return;
+  ocorrencias = [];
+  pendentes   = [];
+  salvarLocal();
+  renderLista();
+  renderRelatorio();
+  renderBadge();
+  toast('Dados locais apagados');
+}
+
+// ═══════════════ NAVEGAÇÃO ════════════════
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'lista')     renderLista();
+  if (name === 'relatorio') renderRelatorio();
+  if (name === 'config')    document.getElementById('cfg-url').value = apiUrl;
+}
+
+// ═══════════════ UTILITÁRIOS ════════════════
+function fmtData(d) {
+  if (!d) return '—';
+  var p = d.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function hoje() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function baixar(conteudo, nome, tipo) {
+  var blob = new Blob([conteudo], { type: tipo });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url; a.download = nome; a.click();
+  URL.revokeObjectURL(url);
+}
+
+var _toastTimer;
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function(){
+    el.style.transform = 'translateX(-50%) translateY(80px)';
+  }, 2800);
+}
+
+// ═══════════════ START ════════════════
+init();
+</script>
+</body>
+</html>
